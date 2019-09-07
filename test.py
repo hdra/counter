@@ -1,7 +1,15 @@
 import unittest
 import argparse
-from main import CountDown, validate_step
+from main import CountDown, validate_step, run
 from datetime import datetime, timedelta
+
+
+class TestPrinter:
+    def __init__(self):
+        self.outputs = []
+
+    def write(self, msg):
+        self.outputs.append(msg)
 
 
 class TestCountDown(unittest.TestCase):
@@ -32,6 +40,21 @@ class TestCountDown(unittest.TestCase):
 
         val = validate_step('1')
         self.assertEqual(1, val)
+
+    def test_ticks_limit(self):
+        t = datetime(1, 1, 1, 10, 2, 3)
+        c = CountDown(t, 11)
+        self.assertRaises(OverflowError, c.tick)
+
+    def test_runner(self):
+        printer = TestPrinter()
+        counter = CountDown(datetime(1, 1, 1, 10, 0, 0), 1)
+        run(counter, printer)
+
+        # Prints 11 timestamps (10 - 0, inclusive) and end of time statement
+        self.assertEqual(len(printer.outputs), 12)
+        self.assertEqual(printer.outputs[-2], 'Time is %s' % counter.format())
+        self.assertEqual(printer.outputs[-1], 'You have reached the beginning of the common era')
 
 
 if __name__ == '__main__':

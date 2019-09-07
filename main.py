@@ -23,6 +23,12 @@ class CountDown:
         return self.time.isoformat(' ').split('.')[0]
 
 
+class Printer:
+
+    def write(self, string):
+        print(string)
+
+
 def validate_step(val):
     try:
         val = int(val)
@@ -35,22 +41,25 @@ def validate_step(val):
     return val
 
 
+def run(counter, printer=None):
+    printer = printer or Printer()
+
+    while True:
+        printer.write('Time is %s' % counter.format())
+        time.sleep(0.02)  # Delay printing so we can somewhat see the output
+        try:
+            counter.tick()
+        except OverflowError:
+            printer.write('You have reached the beginning of the common era')
+            break
+
+
 def main():
     parser = argparse.ArgumentParser(description='Countdown timer')
     parser.add_argument('step', type=validate_step, help='Countdown step in hours')
     args = parser.parse_args()
 
-    now = datetime.now()
-    counter = CountDown(now, args.step)
-
-    while True:
-        print('Time is %s' % counter.format())
-        time.sleep(0.02)  # Delay printing so we can somewhat see the output
-        try:
-            counter.tick()
-        except OverflowError:
-            print('You have reached the beginning of the common era')
-            break
+    run(CountDown(datetime.now(), args.step))
 
 
 if __name__ == '__main__':
